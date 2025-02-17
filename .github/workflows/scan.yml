@@ -1,0 +1,32 @@
+name: Proxy Scanner
+
+on:
+  workflow_dispatch:  # Bisa dijalankan manual
+  schedule:
+    - cron: '0 * * * *'  # Jalankan setiap jam
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run scanner
+        run: python proxy_scanner.py
+
+      - name: Commit and push results
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add active_proxies.csv
+          git commit -m "Update active proxy list [$(date)]" || echo "No changes to commit"
+          git push
